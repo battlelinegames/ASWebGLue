@@ -1,4 +1,5 @@
 // Until https://github.com/AssemblyScript/assemblyscript/issues/1679 is fixed, we need to import the direct file path to aswebglue.
+// import {WebGLRenderingContext, WebGLShader, WebGLProgram} from 'aswebglue/src/WebGL';
 import {WebGLRenderingContext, WebGLShader, WebGLProgram} from './node_modules/aswebglue/src/WebGL';
 
 const VERTEX_SHADER_CODE: string = /*glsl*/ `#version 200 es
