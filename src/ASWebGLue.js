@@ -2111,4 +2111,5 @@ export function initASWebGLue(importObject) {
     } // end catch
   }
 
+  return importObject
 }
