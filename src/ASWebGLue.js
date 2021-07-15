@@ -210,8 +210,20 @@ export function initASWebGLue(importObject) {
 
   importObject.WebGL.createContextFromCanvas = (canvas_id, context_type) => {
     try {
-      const canvas = document.getElementById(WebGL.getString(canvas_id));
-      const gl = canvas.getContext(WebGL.getString(context_type));
+      let gl;
+
+      // If we're in Node.js using webgl-raub (f.e. as-pect setup on JS side).
+      if (typeof process !== 'undefined') {
+        // In Node, when webgl-raub, this makes a window pop open.
+        const canvas = document.createElement('canvas');
+        gl = canvas.getContext('webgl');
+      }
+      // otherwise in DOM.
+      else {
+        const canvas = document.getElementById(WebGL.getString(canvas_id));
+        gl = canvas.getContext(WebGL.getString(context_type));
+      }
+
       let id = WebGL.contextArray.findIndex((element) => element == null);
 
       if (id == -1) {
@@ -1531,7 +1543,8 @@ export function initASWebGLue(importObject) {
 
   importObject.WebGL.vertexAttribPointer = (ctx, indx, size, typ, normalized, stride, offset) => {
     try {
-      WebGL.contextArray[ctx].vertexAttribPointer(indx, size, typ, normalized, stride, offset);
+      // The !!normalized cast is needed in Node.js when using webgl-raub.
+      WebGL.contextArray[ctx].vertexAttribPointer(indx, size, typ, !!normalized, stride, offset);
     } catch (err) {
       console.log("vertexAttrib4fv error");
       console.error(err);

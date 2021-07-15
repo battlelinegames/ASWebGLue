@@ -1,0 +1,15 @@
+{
+  "type": "module",
+  "scripts": {
+    "build": "asc cube.ts -b cube.wasm",
+    "prestart": "npm run build",
+    "start": "node cube.mjs"
+  },
+  "devDependencies": {
+    "@assemblyscript/loader": "^0.17.7",
+    "assemblyscript": "^0.17.7",
+    "aswebglue": "../../../",
+    "glfw-raub": "^4.5.0",
+    "webgl-raub": "^2.1.0"
+  }
+}
