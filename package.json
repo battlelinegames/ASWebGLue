@@ -20,8 +20,8 @@
     "release:major": "npm version major --message 'v%s' && npm publish && git push --follow-tags"
   },
   "devDependencies": {
-    "@assemblyscript/loader": "^0.17.14",
-    "assemblyscript": "^0.17.7",
+    "@assemblyscript/loader": "^0.18.10",
+    "assemblyscript": "^0.18.10",
     "benchmark": "^2.1.4",
     "child-process": "^1.0.2",
     "connect": "^3.7.0",

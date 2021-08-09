@@ -3,20 +3,9 @@ export function print(str) {
 }
 
 export function ASWebGLReady(wasmModule, importObject) {
-  console.log("ASWebGLReady");
-  if (wasmModule == null) {
-    console.error("ASWebGLReady requires the WebAssembly Instance as 1st parameter");
-    return;
-  }
-  if (wasmModule == null) {
-    console.error("ASWebGLReady requires import object as 2nd parameter");
-    return;
-  }
-  importObject.WebGL.WEBGL_READY = true;
-  console.log("=========================");
-  console.log(wasmModule.instance.exports);
-  console.log(wasmModule.instance.exports["__rtti_base"]);
-  importObject.WebGL.RTTI_BASE = wasmModule.instance.exports["__rtti_base"];
+  console.error('AWebGLReady is Deprecated. Call importObject.setExports(exports) after instantiating the Wasm module.')
+
+  // TODO update all the examples.
 }
 
 export function initASWebGLue(importObject) {
@@ -29,12 +18,31 @@ export function initASWebGLue(importObject) {
   }
 
   const WebGL = importObject.WebGL;
+  
+  let shouldLogAborts = true
 
   importObject.env.abort = (...args) => {
-    console.log("abort");
+    if (!shouldLogAborts) return
+    console.log("The module aborted:");
     console.log(WebGL.getString(args[0]));
   }
+  
+  importObject.shouldLogAborts = function(shouldIt) {
+    shouldLogAborts = shouldIt
+  }
 
+  let exports
+  
+  importObject.setExports = function(exportsObject) {
+    exports = exportsObject
+
+    importObject.WebGL.WEBGL_READY = true;
+    
+    return
+    
+    // We can grab RTTI stuff here if we still need.
+    // importObject.WebGL.RTTI_BASE = exportsObject["__rtti_base"];
+  }
 
   importObject.WebGL.WEBGL_READY = false;
   importObject.WebGL.memory = importObject.env.memory;
@@ -176,6 +184,12 @@ export function initASWebGLue(importObject) {
   }
 
   importObject.WebGL.getArrayView = (arr_ptr) => {
+    const arrayView = exports.__getArrayView(arr_ptr);
+    
+    // ...?
+
+    return arrayView
+
     const U32 = new Uint32Array(WebGL.memory.buffer);
     const id = U32[arr_ptr + WebGL.ID_OFFSET >>> 2];
 
@@ -197,20 +211,24 @@ export function initASWebGLue(importObject) {
 
   }
 
-  importObject.WebGL.getString = (string_index) => {
+  importObject.WebGL.getString = (string_ptr) => {
+    return exports.__getString(string_ptr)
+
     const buffer = WebGL.memory.buffer;
     const U32 = new Uint32Array(buffer);
-    const id_addr = string_index / 4 - 2;
+    const id_addr = string_ptr / 4 - 2;
     const id = U32[id_addr];
-    if (id !== 0x01) throw Error(`not a string index=${string_index} id=${id}`);
+    if (id !== 0x01) throw Error(`not a string index=${string_ptr} id=${id}`);
     const len = U32[id_addr + 1];
-    const str = new TextDecoder('utf-16').decode(buffer.slice(string_index, string_index + len));
+    const str = new TextDecoder('utf-16').decode(buffer.slice(string_ptr, string_ptr + len));
     return str;
   }
 
   importObject.WebGL.createContextFromCanvas = (canvas_id, context_type) => {
     try {
-      const canvas = document.getElementById(WebGL.getString(canvas_id));
+      canvas_id = WebGL.getString(canvas_id)
+      console.log(' =========== Canvas to get: ', canvas_id)
+      const canvas = document.getElementById(canvas_id);
       const gl = canvas.getContext(WebGL.getString(context_type));
       let id = WebGL.contextArray.findIndex((element) => element == null);
 
@@ -1151,7 +1169,7 @@ export function initASWebGLue(importObject) {
     } catch (err) {
       console.log("shaderSource error");
       console.error(err);
-    } // end catch
+    } // end catchn
   }
 
   // sets a function for allowing pixels to pass through a stencil.  STENCIL_TEST must be set.
@@ -2093,4 +2111,5 @@ export function initASWebGLue(importObject) {
     } // end catch
   }
 
+  return importObject
 }
